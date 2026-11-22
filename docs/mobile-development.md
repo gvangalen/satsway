@@ -1,12 +1,13 @@
 # Satsway mobile app
 
-The mobile app lives in `/mobile` and uses Expo + React Native.
+The mobile app lives in `/mobile` and uses Expo SDK 57 with React Native 0.86.
+Use Node.js 22.13 or newer on the Node 22 line.
 
 ## Run in Expo
 
 ```bash
 cd mobile
-npm install
+npm ci
 npm run ios
 ```
 
@@ -14,7 +15,11 @@ This starts Metro and opens the iOS Simulator.
 
 ## Open in Xcode
 
-The native iOS project has been generated in `mobile/ios`.
+The native iOS project is generated in `mobile/ios` and is not committed. After
+updating dependencies or cloning the repository, generate it with
+`npm run prebuild:ios`. The project uses an `expo-splash-screen` config plugin.
+The `withQuotedIosBundleScript` config plugin and React Native patch keep iOS
+builds working when the checkout path contains spaces.
 
 If CocoaPods cannot find the iPhoneOS SDK, make sure macOS is using full Xcode instead of Command Line Tools:
 
@@ -27,9 +32,9 @@ sudo xcodebuild -runFirstLaunch
 Then install pods and open the workspace:
 
 ```bash
-cd mobile/ios
-pod install
-open Satsway.xcworkspace
+cd mobile
+npm run pods:ios
+npm run open:ios
 ```
 
 ## API target
@@ -40,7 +45,8 @@ The current mobile MVP points to:
 http://134.98.148.12
 ```
 
-That is the Oracle server. Later, when a domain is ready, change `API_BASE_URL` in `mobile/App.tsx`.
+That is the Oracle server. Later, when a domain is ready, change `API_BASE_URL`
+in `mobile/src/config.ts`.
 
 ## Current app flow
 
