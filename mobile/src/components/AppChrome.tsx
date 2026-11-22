@@ -118,9 +118,9 @@ export function PrimaryButton({ label, onPress, disabled = false }: { label: str
   );
 }
 
-export function SecondaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+export function SecondaryButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
   return (
-    <Pressable style={styles.secondaryButton} onPress={onPress}>
+    <Pressable style={[styles.secondaryButton, disabled && { opacity: 0.55 }]} onPress={onPress} disabled={disabled}>
       <Text style={styles.secondaryButtonText}>{label}</Text>
     </Pressable>
   );

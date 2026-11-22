@@ -8,6 +8,7 @@ import { AppState, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, Vi
 import {
   createGridSandboxLink,
   fetchGridSandboxStatus,
+  fetchNoorGridSandboxLinks,
   gridPayUrl,
   normalizeDemoUrl,
   type SavedGridLink,
@@ -144,6 +145,46 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
     }
   }
 
+  async function loadNoorLinks() {
+    setError("");
+    setActionError("");
+    let baseUrl: string;
+    try {
+      baseUrl = normalizeDemoUrl(demoUrl);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Ongeldig demo-adres.");
+      return;
+    }
+    if (!accessCode.trim()) {
+      setError("Vul eerst de toegangscode van de demo in.");
+      return;
+    }
+
+    setBusy(true);
+    try {
+      const remote = await fetchNoorGridSandboxLinks(baseUrl, accessCode.trim());
+      const next = [
+        ...remote.map((link) => ({ baseUrl, link })),
+        ...links.filter((item) => item.baseUrl !== baseUrl),
+      ].slice(0, 20);
+      setDemoUrl(baseUrl);
+      setLinks(next);
+      setAccessCode("");
+      try {
+        await Promise.all([
+          AsyncStorage.setItem(urlStorageKey, baseUrl),
+          AsyncStorage.setItem(linksStorageKey, JSON.stringify(next)),
+        ]);
+      } catch {
+        setActionError("Noors links zijn geladen, maar konden niet op dit toestel worden bewaard.");
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Noors testlinks konden niet worden geladen.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function shareLink(item: SavedGridLink) {
     if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(item.baseUrl)) {
       setActionError("Een lokaal adres werkt niet op Sams telefoon. Gebruik een publieke HTTPS-demo.");
@@ -189,11 +230,13 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
         <TextInput value={lightningAddress} onChangeText={setLightningAddress} style={ui.input} autoCapitalize="none" autoCorrect={false} placeholder="naam@wallet.example" />
         <Text style={ui.helper}>Het voorbeeldadres ontvangt geen echte sats. Grid verwerkt deze betaling alleen in de sandbox.</Text>
         {error ? <Text style={ui.error}>{error}</Text> : null}
-        <PrimaryButton label={busy ? "Testlink maken…" : "Maak testlink als Noor"} onPress={() => { void createLink(); }} disabled={busy} />
+        <PrimaryButton label={busy ? "Bezig…" : "Maak testlink als Noor"} onPress={() => { void createLink(); }} disabled={busy} />
+        <Text style={ui.helper}>Ook links die buiten deze iPhone zijn gemaakt kun je hieronder ophalen met dezelfde demo-toegangscode.</Text>
+        <SecondaryButton label="Laad Noors testlinks" onPress={() => { void loadNoorLinks(); }} disabled={busy} />
       </View>
 
       <Text style={ui.sectionTitle}>Jouw testlinks</Text>
-      {links.length === 0 ? <Text style={ui.empty}>Nog geen testlinks op dit toestel.</Text> : null}
+      {links.length === 0 ? <Text style={ui.empty}>Nog geen testlinks zichtbaar. Maak er een of laad Noors testlinks.</Text> : null}
       {links.map((item) => {
         const url = gridPayUrl(item.baseUrl, item.link.id);
         return (

@@ -80,6 +80,11 @@ From the repo root:
 5. Open het Grid-testscherm opnieuw. De app ververst de testdollar- en
    satsstatus elke vier seconden en bij terugkeer naar de app.
 
+Als Noor de link op een ander apparaat of via de webdemo heeft gemaakt, vul dan
+dezelfde toegangscode in en kies **Laad Noors testlinks**. De app haalt Noors
+links van de gedeelde backend op en bewaart alleen de linkgegevens lokaal. De
+toegangscode wordt na het ophalen uit het invoerveld gewist.
+
 Optioneel kan `EXPO_PUBLIC_SATSWAY_DEMO_URL` het basisadres vooraf invullen.
 Zet de demo-toegangscode niet in een `EXPO_PUBLIC_` variabele: die wordt in de
 appbundel opgenomen. Een afgeronde sandboxstatus bewijst geen ontvangst in

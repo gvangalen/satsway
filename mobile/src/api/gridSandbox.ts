@@ -56,6 +56,23 @@ function headers(extra?: Record<string, string>): Record<string, string> {
   return { "ngrok-skip-browser-warning": "true", ...extra };
 }
 
+async function loginAsNoor(baseUrl: string, accessCode: string): Promise<string> {
+  const login = await fetch(`${baseUrl}${sandboxPath}/test-login/noor`, {
+    method: "POST",
+    headers: headers(accessCode ? { "X-Satsway-Demo-Code": accessCode } : undefined),
+  });
+  const session = await readResponse<{ access_token: string }>(login, "Inloggen als Noor is mislukt.");
+  return session.access_token;
+}
+
+export async function fetchNoorGridSandboxLinks(baseUrl: string, accessCode: string): Promise<GridSandboxLink[]> {
+  const token = await loginAsNoor(baseUrl, accessCode);
+  const response = await fetch(`${baseUrl}${sandboxPath}/mine`, {
+    headers: headers({ Authorization: `Bearer ${token}` }),
+  });
+  return readResponse<GridSandboxLink[]>(response, "Noors testlinks konden niet worden geladen.");
+}
+
 export async function createGridSandboxLink(
   baseUrl: string,
   accessCode: string,
@@ -65,17 +82,13 @@ export async function createGridSandboxLink(
   const availability = await fetch(`${baseUrl}${sandboxPath}/availability`, { headers: headers() });
   await readResponse<{ enabled: boolean }>(availability, "De Grid-demo is op dit adres niet beschikbaar.");
 
-  const login = await fetch(`${baseUrl}${sandboxPath}/test-login/noor`, {
-    method: "POST",
-    headers: headers(accessCode ? { "X-Satsway-Demo-Code": accessCode } : undefined),
-  });
-  const session = await readResponse<{ access_token: string }>(login, "Inloggen als Noor is mislukt.");
+  const token = await loginAsNoor(baseUrl, accessCode);
 
   const response = await fetch(`${baseUrl}${sandboxPath}`, {
     method: "POST",
     headers: headers({
       "Content-Type": "application/json",
-      Authorization: `Bearer ${session.access_token}`,
+      Authorization: `Bearer ${token}`,
     }),
     body: JSON.stringify({ amount_usd: amountUsd, lightning_address: lightningAddress }),
   });
