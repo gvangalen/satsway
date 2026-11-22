@@ -34,7 +34,15 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "./plugins/withQuotedIosBundleScript"
+      "./plugins/withQuotedIosBundleScript",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "enableSceneSupport": true
+          }
+        }
+      ]
     ]
   }
 }
