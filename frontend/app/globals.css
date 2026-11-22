@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --btc-orange: #f7931a;
+  --btc-orange-light: #ffbc64;
+}
+
+body {
+  margin: 0;
+  background: #ede6dc;
+  color: #241d17;
+  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.app-canvas {
+  min-height: 100vh;
+  padding: 18px;
+  background: radial-gradient(circle at 76% 5%, #ffd7a2 0, transparent 32%),
+    radial-gradient(circle at 10% 81%, #f8c994 0, transparent 43%), #eee9e1;
+}
+
+.app-surface {
+  width: min(100%, 450px);
+  min-height: calc(100vh - 36px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.85);
+  border-radius: 34px;
+  background: #faf8f4;
+  box-shadow: 0 28px 80px rgba(64, 35, 11, .15);
+}
+
+.brand-wordmark { font-size: 30px; font-weight: 900; letter-spacing: -.075em; line-height: 1; }
+.brand-wordmark span { color: var(--btc-orange); }
+.eyebrow { font-size: 11px; font-weight: 850; letter-spacing: .16em; text-transform: uppercase; }
+.soft-card { background: #fff; border: 1px solid #f0e7de; box-shadow: 0 12px 28px rgba(64,35,11,.045); }
+.primary-button { background: var(--btc-orange); color: #23180d; box-shadow: 0 12px 22px rgba(247,147,26,.24); transition: transform .2s, background .2s; }
+.primary-button:hover { background: #ffac42; transform: translateY(-2px); }
+.primary-button:focus-visible, .poster-controls button:focus-visible { outline: 3px solid #9e4c00; outline-offset: 3px; }
+
+.poster-carousel { position: relative; height: 228px; overflow: hidden; border-radius: 26px; isolation: isolate; background: #251a15; color: white; }
+.poster-slide { position: absolute; inset: 0; overflow: hidden; opacity: 0; transform: scale(1.06); transition: opacity .75s ease, transform 5.5s ease; pointer-events: none; }
+.poster-slide.is-active { opacity: 1; transform: scale(1); }
+.poster-slide--sponsor { background: radial-gradient(circle at 88% 26%, #ffc174 0, transparent 30%), linear-gradient(125deg,#4c250d,#ba5c0b 58%,#64300e); }
+.poster-slide--learn { background: radial-gradient(circle at 80% 22%, #ffcd88 0, transparent 28%), linear-gradient(125deg,#31221a,#895323 70%,#5a3822); }
+.poster-slide--studio { background: radial-gradient(circle at 77% 29%, #ffe1b5 0, transparent 30%), linear-gradient(125deg,#3c2330,#b65b39 68%,#773629); }
+.poster-grain { position:absolute; inset:0; opacity:.13; background-image: radial-gradient(#fff 1px,transparent 1px); background-size: 10px 10px; }
+.poster-orbit { position:absolute; width:250px; height:250px; right:-55px; top:-70px; border:1px solid rgba(255,255,255,.38); border-radius:50%; }
+.poster-orbit--two { width:350px; height:350px; right:-105px; top:-118px; opacity:.6; }
+.poster-content { position:relative; z-index:2; width:75%; padding: 25px; }
+.poster-eyebrow { font-size:10px; font-weight:850; letter-spacing:.12em; text-transform:uppercase; color:#ffdfb2; }
+.poster-brand { margin-top:22px; font-size:12px; font-weight:900; letter-spacing:.2em; }
+.poster-title { margin-top:9px; font-size:27px; line-height:1.06; letter-spacing:-.055em; font-weight:850; }
+.poster-detail { margin-top:9px; max-width:240px; font-size:12px; line-height:1.45; color:rgba(255,255,255,.86); }
+.poster-mark { position:absolute; right:16px; bottom:-44px; font-size:205px; font-weight:900; line-height:1; color:rgba(255,255,255,.15); transform:rotate(-15deg); }
+.poster-controls { position:absolute; z-index:4; right:20px; bottom:18px; display:flex; gap:6px; }
+.poster-controls button { width:7px; height:7px; padding:0; border:0; border-radius:9px; background:rgba(255,255,255,.48); transition:width .2s,background .2s; }
+.poster-controls button.is-active { width:22px; background:white; }
+.poster-carousel--backdrop { position:absolute; inset:0; width:100%; height:100%; border-radius:0; opacity:.76; pointer-events:none; }
+.poster-carousel--backdrop .poster-content { width:100%; padding:50px 24px; opacity:.48; }
+.poster-carousel--backdrop .poster-title { font-size:clamp(44px,14vw,100px); max-width:650px; }
+.poster-carousel--backdrop .poster-mark { font-size: min(80vw, 550px); right:-30px; bottom:3vh; }
+
+@media (prefers-reduced-motion: reduce) {
+  .poster-slide { transition:none; transform:none; }
+  .primary-button { transition:none; }
+}

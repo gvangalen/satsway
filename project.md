@@ -1,3 +1,51 @@
+# Satsway: betaalverzoeken met vrije keuze in betaal- en ontvangvaluta
+
+## Productrichting
+
+Satsway is een Tikkie-achtige app waarmee mensen elkaar een betaalverzoek
+sturen. De ontvanger kiest of die euro's of sats wil ontvangen. De betaler
+opent een deelbare link en kiest of die in euro's of met Lightning betaalt.
+De keuze van de betaler staat los van de keuze van de ontvanger:
+
+| Betaler betaalt | Ontvanger ontvangt | Geldroute |
+| --- | --- | --- |
+| EUR | EUR | eurobetaling |
+| EUR | sats | eurobetaling, conversie, Lightning-uitbetaling |
+| sats | EUR | Lightning-betaling, conversie, bankuitbetaling |
+| sats | sats | Lightning-betaling en uitbetaling |
+
+De betaler moet een verzoek via de browser kunnen voldoen zonder Satsway te
+installeren. De app is bedoeld voor mensen die verzoeken maken, betalingen
+volgen en hun ontvangvoorkeur beheren. Lightspark Grid is de beoogde partner
+voor betaling, conversie en uitbetaling; Satsway verzorgt de ervaring,
+links, voorkeuren en betrouwbare statussen. De exacte routes en vereiste
+identificatie moeten door Lightspark worden bevestigd.
+
+De eerste echte proef is EUR 18,50 betalen vanaf een Nederlandse bankrekening
+en sats ontvangen op de bestaande Lightning-wallet van de ontvanger. De app
+heeft een Grid-sandboxkoppeling voor de testflow; de live route van euro's
+naar sats is nog niet beschikbaar.
+
+## Gratis particuliere versie en latere zakelijke versie
+
+De particuliere versie blijft gratis. Op de achtergrond van de app wisselen
+duidelijk herkenbare posters van Bitcoin-bedrijven en korte, neutrale uitleg
+over hoe Bitcoin en Lightning werken elkaar af. Bedrijven betalen voor een
+gesponsorde poster; educatieve inhoud blijft herkenbaar als uitleg van
+Satsway. De reclame mag het bedrag, de kosten, de betaalkeuze of de
+betaalstatus niet verhullen.
+
+Een betaalde zakelijke versie kan later functies krijgen zoals teamaccounts,
+meer betaalverzoeken, rapportage en eigen vormgeving. De exacte functies en
+prijzen zijn nog niet bepaald.
+
+Het prototype heeft al een willekeurige poster op het dashboard en als
+achtergrond van de betaalpagina. Het heeft nog geen onderscheid tussen
+gesponsorde en educatieve posters, geen sponsorbeheer en geen planning of
+rapportage voor adverteerders.
+
+## Oud prototypeplan hieronder
+
 # 🚀 PROJECT: Satsway App (EUR + Bitcoin)
 
 ## 🎯 Doel

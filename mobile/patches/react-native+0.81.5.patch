@@ -1,0 +1,21 @@
+diff --git a/node_modules/react-native/scripts/cocoapods/new_architecture.rb b/node_modules/react-native/scripts/cocoapods/new_architecture.rb
+index 7d8f8e6..89d8e6b 100644
+--- a/node_modules/react-native/scripts/cocoapods/new_architecture.rb
++++ b/node_modules/react-native/scripts/cocoapods/new_architecture.rb
+@@ -4,6 +4,7 @@
+ # LICENSE file in the root directory of this source tree.
+ 
+ require 'json'
++require 'shellwords'
+ 
+ require_relative "./utils.rb"
+ require_relative "./helpers.rb"
+@@ -166,7 +167,7 @@ class NewArchitectureHelper
+         excluded_info_plist = ["/Pods", "Tests", "metainternal", ".bundle", "build/", "DerivedData/"]
+         projectPaths.each do |projectPath|
+             projectFolderPath = File.dirname(projectPath)
+-            infoPlistFiles = `find #{projectFolderPath} -name "Info.plist"`
++            infoPlistFiles = `find #{Shellwords.escape(projectFolderPath)} -name "Info.plist"`
+             infoPlistFiles = infoPlistFiles.split("\n").map { |f| f.strip }
+ 
+             infoPlistFiles.each do |infoPlistFile|
