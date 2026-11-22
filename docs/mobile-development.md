@@ -69,21 +69,24 @@ From the repo root:
 1. Start de gedeelde HTTPS-demo zoals beschreven in
    [shareable-demo.md](shareable-demo.md). De webdemo en mobiele app gebruiken
    dezelfde `/api/sandbox/grid-links`-backend.
-2. Open in de mobiele app **Sturen → Test USD → sats via Grid**. Vul het
-   publieke HTTPS-basisadres van de demo in (zonder `/pay/...`), plus de
-   toegangscode. Een lokaal adres is alleen bruikbaar op de simulator.
+2. Open in de mobiele app **Sturen → Test USD → sats via Grid**. Het publieke
+   HTTPS-basisadres kan via `EXPO_PUBLIC_SATSWAY_DEMO_URL` zijn vooringevuld.
+   Vul de demo-toegangscode eenmalig in om Noor aan te melden. Een lokaal adres
+   is alleen bruikbaar op de simulator.
 3. Laat $18,50 en het voorbeeldadres `recipient@example.com` staan en kies
-   **Maak testlink als Noor**. De toegangscode wordt niet op het toestel
-   opgeslagen; de demo-URL en gemaakte link-ID's wel.
+   **Maak testlink als Noor**. De toegangscode wordt niet opgeslagen. De
+   tijdelijke sessie staat in de beveiligde opslag van het toestel; de demo-URL
+   en gemaakte link-ID's staan in de appopslag.
 4. Kies **Deel via chat**. Sam opent de webbetaallink op een ander toestel,
    meldt zich daar aan als Sam en simuleert de betaling.
-5. Open het Grid-testscherm opnieuw. De app ververst de testdollar- en
-   satsstatus elke vier seconden en bij terugkeer naar de app.
+5. Open het Grid-testscherm opnieuw. De app haalt Noors links op, ververst de
+   testdollar- en satsstatus elke vier seconden en bij terugkeer naar de app.
+   Het nieuwste verzoek staat ook op het startscherm, na opnieuw openen van
+   de app.
 
-Als Noor de link op een ander apparaat of via de webdemo heeft gemaakt, vul dan
-dezelfde toegangscode in en kies **Laad Noors testlinks**. De app haalt Noors
-links van de gedeelde backend op en bewaart alleen de linkgegevens lokaal. De
-toegangscode wordt na het ophalen uit het invoerveld gewist.
+Als Noor de link op een ander apparaat of via de webdemo heeft gemaakt, kiest
+de aangemelde gebruiker **Laad Noors testlinks**. Na afloop van de sessie moet
+de demo-toegangscode opnieuw worden ingevuld.
 
 Optioneel kan `EXPO_PUBLIC_SATSWAY_DEMO_URL` het basisadres vooraf invullen.
 Voor een lokale demonstratie kan `EXPO_PUBLIC_SATSWAY_DEMO_LINK_ID` de publieke

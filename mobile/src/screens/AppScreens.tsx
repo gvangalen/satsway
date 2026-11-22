@@ -1,4 +1,5 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
 import { useIsFocused } from "@react-navigation/native";
@@ -119,15 +120,32 @@ const featuredGridBaseUrl = process.env.EXPO_PUBLIC_SATSWAY_DEMO_URL ?? "";
 
 function GridDemoStatusCard({ onOpen }: { onOpen: () => void }) {
   const isFocused = useIsFocused();
+  const [target, setTarget] = useState({ baseUrl: featuredGridBaseUrl, id: featuredGridLinkId });
   const [link, setLink] = useState<GridSandboxLink | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (!isFocused || !featuredGridLinkId || !featuredGridBaseUrl) return;
+    if (!isFocused) return;
+    let active = true;
+    AsyncStorage.getItem("satsway.mobile.grid.links").then((stored) => {
+      if (!active) return;
+      try {
+        const links = stored ? JSON.parse(stored) as Array<{ baseUrl: string; link: { id: string } }> : [];
+        const latest = links.find((item) => item?.baseUrl && item?.link?.id);
+        if (latest) setTarget({ baseUrl: latest.baseUrl, id: latest.link.id });
+      } catch {
+        // Keep the configured demonstration link if local storage is invalid.
+      }
+    }).catch(() => undefined);
+    return () => { active = false; };
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (!isFocused || !target.id || !target.baseUrl) return;
     let active = true;
     const refresh = async () => {
       try {
-        const latest = await fetchGridSandboxStatus(featuredGridBaseUrl, featuredGridLinkId);
+        const latest = await fetchGridSandboxStatus(target.baseUrl, target.id);
         if (active) { setLink(latest); setError(false); }
       } catch {
         if (active) setError(true);
@@ -139,14 +157,14 @@ function GridDemoStatusCard({ onOpen }: { onOpen: () => void }) {
       if (state === "active") void refresh();
     });
     return () => { active = false; clearInterval(timer); subscription.remove(); };
-  }, [isFocused]);
+  }, [isFocused, target.baseUrl, target.id]);
 
-  if (!featuredGridLinkId || !featuredGridBaseUrl) return null;
+  if (!target.id || !target.baseUrl) return null;
 
   return (
     <Pressable style={styles.homeGridDemoCard} onPress={onOpen}>
       <Text style={styles.homeGridDemoKicker}>GRID-SANDBOX · DEMOBETALING</Text>
-      <Text style={styles.homeGridDemoTitle}>{link ? `${link.owner_name ?? "Noor"} ← ${link.payer_name ?? "Sam"} · ${formatCurrency(link.amount_usd, "USD")}` : "Testbetaling laden…"}</Text>
+      <Text style={styles.homeGridDemoTitle}>{link ? `${link.owner_name ?? "Noor"} ← ${link.payer_name ?? "wacht op betaler"} · ${formatCurrency(link.amount_usd, "USD")}` : "Testbetaling laden…"}</Text>
       <Text style={styles.homeGridDemoDetail}>{error ? "Teststatus tijdelijk niet bereikbaar" : link ? `Testdollars: ${link.fiat_status === "simulated_received" ? "ontvangen" : "nog niet ontvangen"} · Sats: ${link.sats_status === "completed" ? "afgerond" : "in behandeling"}` : "Status ophalen"}</Text>
       {link?.quote_sats != null ? <Text style={styles.homeGridDemoDetail}>Grid-offerte: {link.quote_sats.toLocaleString("nl-NL")} sats</Text> : null}
       <Text style={styles.homeGridDemoFoot}>Alleen een simulatie. Tik voor de testlinks.</Text>

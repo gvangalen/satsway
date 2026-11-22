@@ -55,7 +55,11 @@ one-time visitor notice.
 The Satsway mobile app can be device A: open **Sturen → Test USD → sats via
 Grid**, enter the public demo base URL and access code, create the link as
 Noor, and share it through the phone's share menu. Sam still uses the browser
-on device B. The mobile screen refreshes both statuses automatically.
+on device B. Noor enters the code only at first sign-in on that device (or
+after the 30-day test session expires). The mobile app stores the temporary
+session in secure device storage, fetches Noors links after reopening, and
+shows the newest test request on the home screen. The mobile screen refreshes
+both statuses automatically.
 
 The sample Lightning address `recipient@example.com` is non-routable. A Grid
 status of `completed` represents sandbox processing, not receipt in a real

@@ -56,17 +56,15 @@ function headers(extra?: Record<string, string>): Record<string, string> {
   return { "ngrok-skip-browser-warning": "true", ...extra };
 }
 
-async function loginAsNoor(baseUrl: string, accessCode: string): Promise<string> {
+export async function loginAsNoor(baseUrl: string, accessCode: string): Promise<{ access_token: string; expires_at: string }> {
   const login = await fetch(`${baseUrl}${sandboxPath}/test-login/noor`, {
     method: "POST",
     headers: headers(accessCode ? { "X-Satsway-Demo-Code": accessCode } : undefined),
   });
-  const session = await readResponse<{ access_token: string }>(login, "Inloggen als Noor is mislukt.");
-  return session.access_token;
+  return readResponse<{ access_token: string; expires_at: string }>(login, "Inloggen als Noor is mislukt.");
 }
 
-export async function fetchNoorGridSandboxLinks(baseUrl: string, accessCode: string): Promise<GridSandboxLink[]> {
-  const token = await loginAsNoor(baseUrl, accessCode);
+export async function fetchNoorGridSandboxLinks(baseUrl: string, token: string): Promise<GridSandboxLink[]> {
   const response = await fetch(`${baseUrl}${sandboxPath}/mine`, {
     headers: headers({ Authorization: `Bearer ${token}` }),
   });
@@ -75,14 +73,12 @@ export async function fetchNoorGridSandboxLinks(baseUrl: string, accessCode: str
 
 export async function createGridSandboxLink(
   baseUrl: string,
-  accessCode: string,
+  token: string,
   amountUsd: string,
   lightningAddress: string,
 ): Promise<GridSandboxLink> {
   const availability = await fetch(`${baseUrl}${sandboxPath}/availability`, { headers: headers() });
   await readResponse<{ enabled: boolean }>(availability, "De Grid-demo is op dit adres niet beschikbaar.");
-
-  const token = await loginAsNoor(baseUrl, accessCode);
 
   const response = await fetch(`${baseUrl}${sandboxPath}`, {
     method: "POST",

@@ -10,10 +10,12 @@ import {
   fetchGridSandboxStatus,
   fetchNoorGridSandboxLinks,
   gridPayUrl,
+  loginAsNoor,
   normalizeDemoUrl,
   type SavedGridLink,
 } from "../api/gridSandbox";
 import { BackHeader, PrimaryButton, SecondaryButton } from "../components/AppChrome";
+import { clearGridSession, loadGridSession, saveGridSession } from "../storage/gridSession";
 
 const urlStorageKey = "satsway.mobile.grid.demo-url";
 const linksStorageKey = "satsway.mobile.grid.links";
@@ -45,6 +47,7 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
   const isFocused = useIsFocused();
   const [demoUrl, setDemoUrl] = useState(defaultDemoUrl);
   const [accessCode, setAccessCode] = useState("");
+  const [sessionReady, setSessionReady] = useState(false);
   const [amount, setAmount] = useState("18,50");
   const [lightningAddress, setLightningAddress] = useState(exampleAddress);
   const [links, setLinks] = useState<SavedGridLink[]>([]);
@@ -59,6 +62,7 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
     Promise.all([AsyncStorage.getItem(urlStorageKey), AsyncStorage.getItem(linksStorageKey)])
       .then(async ([storedUrl, storedLinks]) => {
         if (!active) return;
+        const activeUrl = storedUrl || defaultDemoUrl;
         if (storedUrl) setDemoUrl(storedUrl);
         let savedLinks: SavedGridLink[] = [];
         if (storedLinks) {
@@ -72,13 +76,30 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
         if (defaultDemoUrl && featuredDemoLinkId) {
           try {
             const featured = await fetchGridSandboxStatus(defaultDemoUrl, featuredDemoLinkId);
-            savedLinks = [
-              { baseUrl: defaultDemoUrl, link: featured },
-              ...savedLinks.filter((item) => item.baseUrl !== defaultDemoUrl || item.link.id !== featuredDemoLinkId),
-            ].slice(0, 20);
+            savedLinks = savedLinks.some((item) => item.baseUrl === defaultDemoUrl && item.link.id === featuredDemoLinkId)
+              ? savedLinks.map((item) => item.baseUrl === defaultDemoUrl && item.link.id === featuredDemoLinkId
+                ? { baseUrl: defaultDemoUrl, link: featured } : item)
+              : [...savedLinks, { baseUrl: defaultDemoUrl, link: featured }].slice(0, 20);
             await AsyncStorage.setItem(linksStorageKey, JSON.stringify(savedLinks));
           } catch {
             // Existing saved links remain available when the public demo is offline.
+          }
+        }
+        if (activeUrl) {
+          const session = await loadGridSession(activeUrl);
+          if (session) {
+            setSessionReady(true);
+            try {
+              const remote = await fetchNoorGridSandboxLinks(activeUrl, session.token);
+              const remoteIds = new Set(remote.map((link) => link.id));
+              savedLinks = [
+                ...remote.map((link) => ({ baseUrl: activeUrl, link })),
+                ...savedLinks.filter((item) => item.baseUrl !== activeUrl || !remoteIds.has(item.link.id)),
+              ].slice(0, 20);
+              await AsyncStorage.setItem(linksStorageKey, JSON.stringify(savedLinks));
+            } catch {
+              if (active) setStatusError("Noors testlinks konden niet worden ververst.");
+            }
           }
         }
         if (active) setLinks(savedLinks);
@@ -116,6 +137,17 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
     return () => { active = false; clearInterval(timer); subscription.remove(); };
   }, [isFocused, linkKeys]);
 
+  async function sessionToken(baseUrl: string): Promise<string> {
+    const existing = await loadGridSession(baseUrl);
+    if (existing) return existing.token;
+    if (!accessCode.trim()) throw new Error("Vul de demo-toegangscode eenmalig in om als Noor te starten.");
+    const login = await loginAsNoor(baseUrl, accessCode.trim());
+    await saveGridSession({ baseUrl, token: login.access_token, expiresAt: login.expires_at });
+    setSessionReady(true);
+    setAccessCode("");
+    return login.access_token;
+  }
+
   async function createLink() {
     setError("");
     setActionError("");
@@ -140,11 +172,11 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
 
     setBusy(true);
     try {
-      const link = await createGridSandboxLink(baseUrl, accessCode.trim(), numericAmount.toFixed(2), address);
+      const token = await sessionToken(baseUrl);
+      const link = await createGridSandboxLink(baseUrl, token, numericAmount.toFixed(2), address);
       const next = [{ baseUrl, link }, ...links.filter((item) => item.link.id !== link.id)].slice(0, 20);
       setDemoUrl(baseUrl);
       setLinks(next);
-      setAccessCode("");
       try {
         await Promise.all([
           AsyncStorage.setItem(urlStorageKey, baseUrl),
@@ -170,21 +202,16 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
       setError(reason instanceof Error ? reason.message : "Ongeldig demo-adres.");
       return;
     }
-    if (!accessCode.trim()) {
-      setError("Vul eerst de toegangscode van de demo in.");
-      return;
-    }
-
     setBusy(true);
     try {
-      const remote = await fetchNoorGridSandboxLinks(baseUrl, accessCode.trim());
+      const token = await sessionToken(baseUrl);
+      const remote = await fetchNoorGridSandboxLinks(baseUrl, token);
       const next = [
         ...remote.map((link) => ({ baseUrl, link })),
         ...links.filter((item) => item.baseUrl !== baseUrl),
       ].slice(0, 20);
       setDemoUrl(baseUrl);
       setLinks(next);
-      setAccessCode("");
       try {
         await Promise.all([
           AsyncStorage.setItem(urlStorageKey, baseUrl),
@@ -235,10 +262,19 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
       <View style={ui.card}>
         <Text style={ui.cardTitle}>Maak een testverzoek</Text>
         <Text style={ui.label}>HTTPS-adres van de gedeelde demo</Text>
-        <TextInput value={demoUrl} onChangeText={setDemoUrl} style={ui.input} placeholder="https://jouw-demo.ngrok-free.app" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
+        <TextInput value={demoUrl} onChangeText={(value) => { setDemoUrl(value); setSessionReady(false); }} style={ui.input} placeholder="https://jouw-demo.ngrok-free.app" autoCapitalize="none" autoCorrect={false} keyboardType="url" />
         <Text style={ui.helper}>Gebruik het publieke demo-adres zodat Sam de link op zijn telefoon kan openen.</Text>
-        <Text style={ui.label}>Toegangscode van de demo</Text>
-        <TextInput value={accessCode} onChangeText={setAccessCode} style={ui.input} placeholder="Toegangscode" secureTextEntry autoCapitalize="none" autoCorrect={false} />
+        {sessionReady ? (
+          <View style={ui.row}>
+            <Text style={ui.helper}>Ingelogd als Noor op dit toestel</Text>
+            <Pressable onPress={() => { void clearGridSession().then(() => setSessionReady(false)); }}><Text style={ui.linkText}>Wissel</Text></Pressable>
+          </View>
+        ) : (
+          <>
+            <Text style={ui.label}>Eenmalige demo-toegangscode</Text>
+            <TextInput value={accessCode} onChangeText={setAccessCode} style={ui.input} placeholder="Toegangscode" secureTextEntry autoCapitalize="none" autoCorrect={false} />
+          </>
+        )}
         <Text style={ui.label}>Bedrag in testdollars</Text>
         <TextInput value={amount} onChangeText={setAmount} style={ui.input} keyboardType="decimal-pad" placeholder="18,50" />
         <Text style={ui.label}>Lightning-adres van Noor</Text>
@@ -246,7 +282,7 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
         <Text style={ui.helper}>Het voorbeeldadres ontvangt geen echte sats. Grid verwerkt deze betaling alleen in de sandbox.</Text>
         {error ? <Text style={ui.error}>{error}</Text> : null}
         <PrimaryButton label={busy ? "Bezig…" : "Maak testlink als Noor"} onPress={() => { void createLink(); }} disabled={busy} />
-        <Text style={ui.helper}>Ook links die buiten deze iPhone zijn gemaakt kun je hieronder ophalen met dezelfde demo-toegangscode.</Text>
+        <Text style={ui.helper}>Noors links verschijnen na aanmelden automatisch, ook als ze op een ander toestel zijn gemaakt.</Text>
         <SecondaryButton label="Laad Noors testlinks" onPress={() => { void loadNoorLinks(); }} disabled={busy} />
       </View>
 
@@ -293,6 +329,7 @@ const ui = StyleSheet.create({
   label: { color: "#593f2f", fontSize: 13, fontWeight: "800", marginTop: 4 },
   input: { backgroundColor: "#fffaf5", borderColor: "#ead7c4", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, minHeight: 48, color: "#281b14", fontSize: 15 },
   helper: { color: "#8b7466", fontSize: 12, lineHeight: 18 },
+  linkText: { color: "#b66310", fontSize: 12, fontWeight: "800" },
   error: { color: "#a32420", fontSize: 13, fontWeight: "700" },
   sectionTitle: { color: "#281b14", fontSize: 21, fontWeight: "900", marginTop: 5 },
   empty: { color: "#8b7466", fontSize: 14 },
