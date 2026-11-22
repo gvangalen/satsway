@@ -1,10 +1,12 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Clipboard from "expo-clipboard";
 import * as Linking from "expo-linking";
+import { useIsFocused } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
   ImageBackground,
   Pressable,
   ScrollView,
@@ -15,6 +17,7 @@ import {
 } from "react-native";
 
 import { API_BASE_URL, AWARENESS_CONTENT_POOL, DEMO_POSTERS, FEATURE_FLAGS } from "../config";
+import { fetchGridSandboxStatus, type GridSandboxLink } from "../api/gridSandbox";
 import type { BtcQuote, Currency, PaymentShare, Rates, SplitRequest } from "../types";
 import { formatCurrency, formatDisplayAmount } from "../utils/format";
 import { buildAppPayLink, buildShareMessage, buildWebPayLink } from "../utils/links";
@@ -79,6 +82,7 @@ export function HomeScreen({
 
       <PrimaryButton label="Nieuwe split maken" onPress={onCreate} />
       <SecondaryButton label="Test USD → sats via Grid" onPress={onGridSandbox} />
+      <GridDemoStatusCard onOpen={onGridSandbox} />
 
       <View style={styles.quickGrid}>
         <QuickAction label="Scan bon" icon="▣" onPress={onScan} variant="glass" />
@@ -107,6 +111,46 @@ export function HomeScreen({
       )}
       </ScrollView>
     </View>
+  );
+}
+
+const featuredGridLinkId = process.env.EXPO_PUBLIC_SATSWAY_DEMO_LINK_ID ?? "";
+const featuredGridBaseUrl = process.env.EXPO_PUBLIC_SATSWAY_DEMO_URL ?? "";
+
+function GridDemoStatusCard({ onOpen }: { onOpen: () => void }) {
+  const isFocused = useIsFocused();
+  const [link, setLink] = useState<GridSandboxLink | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused || !featuredGridLinkId || !featuredGridBaseUrl) return;
+    let active = true;
+    const refresh = async () => {
+      try {
+        const latest = await fetchGridSandboxStatus(featuredGridBaseUrl, featuredGridLinkId);
+        if (active) { setLink(latest); setError(false); }
+      } catch {
+        if (active) setError(true);
+      }
+    };
+    void refresh();
+    const timer = setInterval(() => { void refresh(); }, 4000);
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") void refresh();
+    });
+    return () => { active = false; clearInterval(timer); subscription.remove(); };
+  }, [isFocused]);
+
+  if (!featuredGridLinkId || !featuredGridBaseUrl) return null;
+
+  return (
+    <Pressable style={styles.homeGridDemoCard} onPress={onOpen}>
+      <Text style={styles.homeGridDemoKicker}>GRID-SANDBOX · DEMOBETALING</Text>
+      <Text style={styles.homeGridDemoTitle}>{link ? `${link.owner_name ?? "Noor"} ← ${link.payer_name ?? "Sam"} · ${formatCurrency(link.amount_usd, "USD")}` : "Testbetaling laden…"}</Text>
+      <Text style={styles.homeGridDemoDetail}>{error ? "Teststatus tijdelijk niet bereikbaar" : link ? `Testdollars: ${link.fiat_status === "simulated_received" ? "ontvangen" : "nog niet ontvangen"} · Sats: ${link.sats_status === "completed" ? "afgerond" : "in behandeling"}` : "Status ophalen"}</Text>
+      {link?.quote_sats != null ? <Text style={styles.homeGridDemoDetail}>Grid-offerte: {link.quote_sats.toLocaleString("nl-NL")} sats</Text> : null}
+      <Text style={styles.homeGridDemoFoot}>Alleen een simulatie. Tik voor de testlinks.</Text>
+    </Pressable>
   );
 }
 

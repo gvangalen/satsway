@@ -18,6 +18,7 @@ import { BackHeader, PrimaryButton, SecondaryButton } from "../components/AppChr
 const urlStorageKey = "satsway.mobile.grid.demo-url";
 const linksStorageKey = "satsway.mobile.grid.links";
 const defaultDemoUrl = process.env.EXPO_PUBLIC_SATSWAY_DEMO_URL ?? "";
+const featuredDemoLinkId = process.env.EXPO_PUBLIC_SATSWAY_DEMO_LINK_ID ?? "";
 const exampleAddress = "recipient@example.com";
 
 function fiatLabel(status: string): string {
@@ -56,17 +57,31 @@ export function GridSandboxScreen({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     let active = true;
     Promise.all([AsyncStorage.getItem(urlStorageKey), AsyncStorage.getItem(linksStorageKey)])
-      .then(([storedUrl, storedLinks]) => {
+      .then(async ([storedUrl, storedLinks]) => {
         if (!active) return;
         if (storedUrl) setDemoUrl(storedUrl);
+        let savedLinks: SavedGridLink[] = [];
         if (storedLinks) {
           const parsed: unknown = JSON.parse(storedLinks);
           if (Array.isArray(parsed)) {
-            setLinks(parsed.filter((item): item is SavedGridLink =>
+            savedLinks = parsed.filter((item): item is SavedGridLink =>
               typeof item?.baseUrl === "string" && typeof item?.link?.id === "string"
-            ).slice(0, 20));
+            ).slice(0, 20);
           }
         }
+        if (defaultDemoUrl && featuredDemoLinkId) {
+          try {
+            const featured = await fetchGridSandboxStatus(defaultDemoUrl, featuredDemoLinkId);
+            savedLinks = [
+              { baseUrl: defaultDemoUrl, link: featured },
+              ...savedLinks.filter((item) => item.baseUrl !== defaultDemoUrl || item.link.id !== featuredDemoLinkId),
+            ].slice(0, 20);
+            await AsyncStorage.setItem(linksStorageKey, JSON.stringify(savedLinks));
+          } catch {
+            // Existing saved links remain available when the public demo is offline.
+          }
+        }
+        if (active) setLinks(savedLinks);
       })
       .catch(() => { if (active) setStatusError("Eerder gemaakte testlinks konden niet worden geladen."); });
     return () => { active = false; };

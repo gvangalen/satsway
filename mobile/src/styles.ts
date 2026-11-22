@@ -455,6 +455,18 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 28,
   },
+  homeGridDemoCard: {
+    backgroundColor: "#ecfdf5",
+    borderColor: "#a7f3d0",
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 18,
+    gap: 5,
+  },
+  homeGridDemoKicker: { color: "#047857", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
+  homeGridDemoTitle: { color: "#020617", fontSize: 19, fontWeight: "900" },
+  homeGridDemoDetail: { color: "#065f46", fontSize: 13, fontWeight: "700" },
+  homeGridDemoFoot: { color: "#64748b", fontSize: 11, marginTop: 3 },
   rowBetween: {
     alignItems: "center",
     flexDirection: "row",

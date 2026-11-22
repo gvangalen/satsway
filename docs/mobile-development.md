@@ -86,6 +86,10 @@ links van de gedeelde backend op en bewaart alleen de linkgegevens lokaal. De
 toegangscode wordt na het ophalen uit het invoerveld gewist.
 
 Optioneel kan `EXPO_PUBLIC_SATSWAY_DEMO_URL` het basisadres vooraf invullen.
+Voor een lokale demonstratie kan `EXPO_PUBLIC_SATSWAY_DEMO_LINK_ID` de publieke
+status van één bestaande sandboxlink op het startscherm en in de testlinks tonen,
+zonder toegangscode in te voeren. Dit is een
+alleen-lezen demonstratie en telt niet mee in de gewone betaalverzoeken.
 Zet de demo-toegangscode niet in een `EXPO_PUBLIC_` variabele: die wordt in de
 appbundel opgenomen. Een afgeronde sandboxstatus bewijst geen ontvangst in
 een echte Lightning-wallet.
