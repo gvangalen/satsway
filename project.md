@@ -1,4 +1,4 @@
-# 🚀 PROJECT: SplitPay App (EUR + Bitcoin)
+# 🚀 PROJECT: Satsway App (EUR + Bitcoin)
 
 ## 🎯 Doel
 We bouwen een app zoals Tikkie, maar met twee betaalopties:
