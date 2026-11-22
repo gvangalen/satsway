@@ -52,6 +52,11 @@ one-time visitor notice.
 4. On device A, reopen `/request/grid/{id}`. The fiat and sats statuses are
    shown separately.
 
+The Satsway mobile app can be device A: open **Sturen → Test USD → sats via
+Grid**, enter the public demo base URL and access code, create the link as
+Noor, and share it through the phone's share menu. Sam still uses the browser
+on device B. The mobile screen refreshes both statuses automatically.
+
 The sample Lightning address `recipient@example.com` is non-routable. A Grid
 status of `completed` represents sandbox processing, not receipt in a real
 wallet. The demo's login route is code gated; the ordinary email login and

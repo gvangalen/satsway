@@ -20,6 +20,7 @@ import {
   WalletScreen,
 } from "./src/screens/AppScreens";
 import { loadStoredRequests, saveStoredRequests } from "./src/storage/requests";
+import { GridSandboxScreen } from "./src/screens/GridSandboxScreen";
 import type { BackendRequest, Currency, Rates, RequestStatus, SplitRequest, TabScreen } from "./src/types";
 import { formatCurrency } from "./src/utils/format";
 import { BottomTabs } from "./src/components/AppChrome";
@@ -314,6 +315,7 @@ export default function App() {
                         openAmount={openAmount}
                         requests={requests}
                         onCreate={() => navigateTab("create")}
+                        onGridSandbox={() => navigationRef.navigate("gridSandbox")}
                         onScan={() => navigateTab("scan")}
                         onOpenRequest={openRequest}
                       />
@@ -345,6 +347,7 @@ export default function App() {
                           )
                         }
                         onSubmit={createRequest}
+                        onGridSandbox={() => navigationRef.navigate("gridSandbox")}
                       />
                     )}
                   </Tab.Screen>
@@ -375,6 +378,9 @@ export default function App() {
                   </Tab.Screen>
                 </Tab.Navigator>
               )}
+            </Stack.Screen>
+            <Stack.Screen name="gridSandbox">
+              {() => <GridSandboxScreen onBack={() => navigateTab("home")} />}
             </Stack.Screen>
             <Stack.Screen name="request">
               {({ route }) => {

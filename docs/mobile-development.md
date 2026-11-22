@@ -63,3 +63,24 @@ From the repo root:
 ```bash
 ./scripts/check-mobile.sh
 ```
+
+## Grid-testlink vanuit de app
+
+1. Start de gedeelde HTTPS-demo zoals beschreven in
+   [shareable-demo.md](shareable-demo.md). De webdemo en mobiele app gebruiken
+   dezelfde `/api/sandbox/grid-links`-backend.
+2. Open in de mobiele app **Sturen → Test USD → sats via Grid**. Vul het
+   publieke HTTPS-basisadres van de demo in (zonder `/pay/...`), plus de
+   toegangscode. Een lokaal adres is alleen bruikbaar op de simulator.
+3. Laat $18,50 en het voorbeeldadres `recipient@example.com` staan en kies
+   **Maak testlink als Noor**. De toegangscode wordt niet op het toestel
+   opgeslagen; de demo-URL en gemaakte link-ID's wel.
+4. Kies **Deel via chat**. Sam opent de webbetaallink op een ander toestel,
+   meldt zich daar aan als Sam en simuleert de betaling.
+5. Open het Grid-testscherm opnieuw. De app ververst de testdollar- en
+   satsstatus elke vier seconden en bij terugkeer naar de app.
+
+Optioneel kan `EXPO_PUBLIC_SATSWAY_DEMO_URL` het basisadres vooraf invullen.
+Zet de demo-toegangscode niet in een `EXPO_PUBLIC_` variabele: die wordt in de
+appbundel opgenomen. Een afgeronde sandboxstatus bewijst geen ontvangst in
+een echte Lightning-wallet.

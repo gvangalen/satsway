@@ -1,4 +1,4 @@
-export type Screen = "home" | "create" | "request" | "pay" | "scan" | "requests" | "wallet";
+export type Screen = "home" | "create" | "request" | "pay" | "scan" | "requests" | "wallet" | "gridSandbox";
 export type TabScreen = "home" | "create" | "scan" | "requests" | "wallet";
 export type Currency = "EUR" | "USD" | "BTC";
 export type RequestStatus = "pending" | "paid" | "expired";

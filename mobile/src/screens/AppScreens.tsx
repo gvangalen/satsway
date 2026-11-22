@@ -31,12 +31,14 @@ export function HomeScreen({
   openAmount,
   requests,
   onCreate,
+  onGridSandbox,
   onScan,
   onOpenRequest,
 }: {
   openAmount: number;
   requests: SplitRequest[];
   onCreate: () => void;
+  onGridSandbox: () => void;
   onScan: () => void;
   onOpenRequest: (request: SplitRequest) => void;
 }) {
@@ -76,6 +78,7 @@ export function HomeScreen({
       <SponsorLabel id={awareness?.id} screen="home" sponsor={sponsor} variant={awareness?.variant} />
 
       <PrimaryButton label="Nieuwe split maken" onPress={onCreate} />
+      <SecondaryButton label="Test USD → sats via Grid" onPress={onGridSandbox} />
 
       <View style={styles.quickGrid}>
         <QuickAction label="Scan bon" icon="▣" onPress={onScan} variant="glass" />
@@ -314,6 +317,7 @@ export function CreateScreen({
   onSplitModeChange,
   onCustomAmountChange,
   onSubmit,
+  onGridSandbox,
 }: {
   amount: string;
   description: string;
@@ -332,6 +336,7 @@ export function CreateScreen({
   onSplitModeChange: (value: SplitRequest["splitMode"]) => void;
   onCustomAmountChange: (index: number, value: string) => void;
   onSubmit: () => void;
+  onGridSandbox: () => void;
 }) {
   const perPerson = useMemo(() => {
     const value = Number(amount.replace(",", "."));
@@ -469,6 +474,7 @@ export function CreateScreen({
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
       <PrimaryButton label={isLoading ? "Betaalverzoek maken..." : "Betaalverzoek maken"} onPress={onSubmit} disabled={isLoading} />
+      <SecondaryButton label="Test USD → sats via Grid" onPress={onGridSandbox} />
     </ScrollView>
   );
 }
